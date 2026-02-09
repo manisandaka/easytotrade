@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { enrollFree } from '../actions'
+import RazorpayCheckout from '../../components/RazorpayCheckout'
 
 export default async function CourseDetailPage({ params }: { params: { id: string } }) {
     const { id } = await params
@@ -123,21 +124,35 @@ export default async function CourseDetailPage({ params }: { params: { id: strin
                                 Continue Learning
                             </Link>
                         ) : (
-                            <form action={course.price === 0 ? enrollFree.bind(null, id) : undefined}>
-                                {/* Placeholder for Stripe checkout - for now we might link to a dummy enroll action if free */}
-                                <button
-                                    type="submit"
-                                    className="w-full bg-primary text-primary-foreground font-bold py-3 rounded-lg hover:opacity-90 transition disabled:opacity-50"
-                                    disabled={course.price > 0} // Disable paid for now utils Stripe
-                                >
-                                    {course.price > 0 ? `Enroll for $${(course.price / 100).toFixed(2)}` : 'Enroll for Free'}
-                                </button>
-                                {course.price > 0 && <p className="text-center text-xs text-muted-foreground mt-2">Payments coming soon.</p>}
-                            </form>
+                            <>
+                                {course.price === 0 ? (
+                                    <form action={enrollFree.bind(null, id)}>
+                                        <button
+                                            type="submit"
+                                            className="w-full bg-primary text-primary-foreground font-bold py-3 rounded-lg hover:opacity-90 transition"
+                                        >
+                                            Enroll for Free
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <RazorpayCheckout
+                                        courseId={id}
+                                        price={course.price}
+                                        title={course.title}
+                                        description={course.description}
+                                        user={{
+                                            id: user?.id || '',
+                                            email: user?.email || '',
+                                            full_name: course.profiles?.full_name
+                                        }}
+                                    />
+                                )}
+                            </>
                         )}
+
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
