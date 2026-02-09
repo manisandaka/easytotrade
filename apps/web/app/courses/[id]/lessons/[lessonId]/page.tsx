@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { toggleLessonCompletion } from '../../actions'
+import { toggleLessonCompletion } from '../../../actions'
 
 export default async function LessonPage({
     params
