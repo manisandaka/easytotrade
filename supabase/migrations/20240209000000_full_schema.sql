@@ -39,7 +39,6 @@ end;
 $$ language plpgsql security definer;
 
 -- Trigger creates profile on auth.users insert
--- Note: In local dev this might need to be created manually or handled by Supabase Auth
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
@@ -48,7 +47,7 @@ create trigger on_auth_user_created
 
 -- CATEGORIES
 create table categories (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   name text not null unique,
   slug text unique not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
@@ -67,7 +66,7 @@ create policy "Admins can insert categories" on categories
 
 -- COURSES
 create table courses (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   title text not null,
   description text,
   image_url text,
@@ -96,9 +95,31 @@ create policy "Instructors can update own courses" on courses
   );
 
 
+-- ENROLLMENTS (Moved up due to dependency in Lessons Policy)
+create table enrollments (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references profiles(id) on delete cascade not null,
+  course_id uuid references courses(id) on delete cascade not null,
+  status enrollment_status default 'active',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  unique(user_id, course_id)
+);
+
+alter table enrollments enable row level security;
+
+create policy "Users can view own enrollments" on enrollments
+  for select using (user_id = auth.uid());
+
+create policy "Admins/Instructors can view course enrollments" on enrollments
+  for select using (
+    exists (select 1 from courses where id = course_id and instructor_id = auth.uid()) or
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+  );
+
+
 -- LESSONS
 create table lessons (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   course_id uuid references courses(id) on delete cascade not null,
   title text not null,
   description text,
@@ -135,28 +156,6 @@ create policy "Instructors can update lessons" on lessons
   );
 
 
--- ENROLLMENTS
-create table enrollments (
-  id uuid default uuid_generate_v4() primary key,
-  user_id uuid references profiles(id) on delete cascade not null,
-  course_id uuid references courses(id) on delete cascade not null,
-  status enrollment_status default 'active',
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  unique(user_id, course_id)
-);
-
-alter table enrollments enable row level security;
-
-create policy "Users can view own enrollments" on enrollments
-  for select using (user_id = auth.uid());
-
-create policy "Admins/Instructors can view course enrollments" on enrollments
-  for select using (
-    exists (select 1 from courses where id = course_id and instructor_id = auth.uid()) or
-    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
-  );
-
-
 -- LESSON PROGRESS
 create table lesson_progress (
   user_id uuid references profiles(id) on delete cascade not null,
@@ -181,7 +180,7 @@ create policy "Users can update own progress update" on lesson_progress
 
 -- QUIZZES (Simplified for MVP)
 create table quizzes (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   lesson_id uuid references lessons(id) on delete cascade not null,
   title text not null,
   passing_score integer default 70,
@@ -207,7 +206,7 @@ create policy "Quizzes viewable by enrolled" on quizzes
   );
 
 create table quiz_questions (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   quiz_id uuid references quizzes(id) on delete cascade not null,
   question_text text not null,
   options jsonb not null,
@@ -239,9 +238,12 @@ create policy "Questions viewable by enrolled" on quiz_questions
 
 -- PAYMENTS
 create table payments (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   user_id uuid references profiles(id) on delete set null,
-  stripe_session_id text not null unique,
+  stripe_session_id text, -- nullable now
+  razorpay_order_id text,
+  razorpay_payment_id text,
+  razorpay_signature text,
   amount integer not null,
   status text not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null

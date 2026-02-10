@@ -35,7 +35,9 @@ export async function POST(request: Request) {
         // 1. Record payment
         const { error: paymentError } = await supabase.from('payments').insert({
             user_id: user.id,
-            stripe_session_id: razorpay_payment_id, // Reusing column for now or should rename ideally
+            razorpay_order_id: razorpay_order_id,
+            razorpay_payment_id: razorpay_payment_id,
+            razorpay_signature: razorpay_signature,
             amount: 0, // We should fetch this from order or pass it, but for verification just recording ID is key
             status: 'paid',
         })
