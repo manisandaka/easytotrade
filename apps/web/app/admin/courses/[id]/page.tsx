@@ -19,7 +19,7 @@ export default async function EditCoursePage({ params }: { params: { id: string 
     }
 
     // Sort lessons locally if needed or use order() in query
-    const lessons = (course.lessons as any[])?.sort((a, b) => a.order - b.order) || []
+    const lessons = (course.lessons as { id: string; title: string; order: number; is_preview: boolean }[])?.sort((a, b) => a.order - b.order) || []
 
     return (
         <div className="flex flex-col items-center p-8 w-full">
@@ -67,7 +67,7 @@ export default async function EditCoursePage({ params }: { params: { id: string 
                     </div>
 
                     <div className="space-y-2">
-                        {lessons.map((lesson: any) => (
+                        {lessons.map((lesson: { id: string; title: string; order: number; is_preview: boolean }) => (
                             <div key={lesson.id} className="flex justify-between items-center p-3 border rounded bg-background">
                                 <div className="flex items-center gap-4">
                                     <span className="font-mono text-muted-foreground w-6 text-center">{lesson.order}</span>

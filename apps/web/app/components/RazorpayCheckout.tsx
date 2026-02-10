@@ -17,7 +17,7 @@ interface RazorpayCheckoutProps {
 
 declare global {
     interface Window {
-        Razorpay: any;
+        Razorpay: new (options: any) => any;
     }
 }
 
@@ -46,7 +46,7 @@ export default function RazorpayCheckout({ courseId, price, title, description, 
                 description: title,
                 image: "https://your-logo-url.com/logo.png", // Optional
                 order_id: order.id,
-                handler: async function (response: any) {
+                handler: async function (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) {
                     // 3. Verify Payment
                     const verifyRes = await fetch('/api/razorpay/verify', {
                         method: 'POST',
@@ -79,7 +79,7 @@ export default function RazorpayCheckout({ courseId, price, title, description, 
             };
 
             const rzp1 = new window.Razorpay(options);
-            rzp1.on('payment.failed', function (response: any) {
+            rzp1.on('payment.failed', function (response: { error: { description: string } }) {
                 alert(response.error.description);
             });
             rzp1.open();

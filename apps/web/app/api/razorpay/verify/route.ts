@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true })
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('Payment Verification Error:', err)
         return new NextResponse('Internal Error', { status: 500 })
     }

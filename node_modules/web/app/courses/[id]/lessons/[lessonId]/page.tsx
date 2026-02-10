@@ -64,7 +64,7 @@ export default async function LessonPage({
         .order('order', { ascending: true })
 
     const allLessons = allLessonsRaw || []
-    const currentIndex = allLessons.findIndex((l: any) => l.id === lessonId)
+    const currentIndex = allLessons.findIndex((l: { id: string }) => l.id === lessonId)
     const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null
     const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null
 

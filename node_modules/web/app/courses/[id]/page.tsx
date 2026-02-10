@@ -39,7 +39,7 @@ export default async function CourseDetailPage({ params }: { params: { id: strin
         if (enrollment) isEnrolled = true
     }
 
-    const lessons = (course.lessons as any[])?.sort((a, b) => a.order - b.order) || []
+    const lessons = (course.lessons as { id: string; title: string; order: number; is_preview: boolean }[])?.sort((a, b) => a.order - b.order) || []
 
     return (
         <div className="flex flex-col items-center p-8 w-full min-h-screen">
@@ -81,7 +81,7 @@ export default async function CourseDetailPage({ params }: { params: { id: strin
                             <span className="text-sm text-muted-foreground">{lessons.length} lessons</span>
                         </div>
                         <div className="space-y-2">
-                            {lessons.map((lesson: any, idx: number) => (
+                            {lessons.map((lesson: { id: string; title: string; is_preview: boolean }, idx: number) => (
                                 <div
                                     key={lesson.id}
                                     className={`flex justify-between items-center p-3 border rounded ${isEnrolled || lesson.is_preview
