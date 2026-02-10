@@ -17,7 +17,7 @@ export async function signInWithGoogle() {
     })
 
     if (error) {
-        return redirect('/login?message=Could not authenticate with Google')
+        return redirect('/login?message=' + encodeURIComponent('Could not authenticate with Google. Please try again.'))
     }
 
     if (data.url) {
@@ -32,13 +32,17 @@ export async function login(formData: FormData) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
+    if (!email || !password) {
+        return redirect('/login?message=' + encodeURIComponent('Please enter both email and password'))
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
     })
 
     if (error) {
-        return redirect('/login?message=Could not authenticate user')
+        return redirect('/login?message=' + encodeURIComponent(error.message))
     }
 
     revalidatePath('/', 'layout')
@@ -52,6 +56,10 @@ export async function signup(formData: FormData) {
     const password = formData.get('password') as string
     const fullName = formData.get('fullName') as string
 
+    if (!email || !password) {
+        return redirect('/login?message=' + encodeURIComponent('Please enter both email and password'))
+    }
+
     const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -64,7 +72,7 @@ export async function signup(formData: FormData) {
     })
 
     if (error) {
-        return redirect('/login?message=Could not authenticate user')
+        return redirect('/login?message=' + encodeURIComponent(error.message))
     }
 
     return redirect('/login?message=Check email to continue sign in process')
