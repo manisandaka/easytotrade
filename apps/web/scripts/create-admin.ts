@@ -1,34 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
-import fs from 'fs'
+import dotenv from 'dotenv'
 import path from 'path'
 
-// Load env vars manually
-// Load env vars manually
-const envPath = path.resolve(process.cwd(), '.env')
-console.log(`Loading env from: ${envPath}`)
+// Load env vars
+dotenv.config({ path: path.resolve(process.cwd(), '.env') })
 
-if (!fs.existsSync(envPath)) {
-    console.error(`Error: .env file not found at ${envPath}`)
-    process.exit(1)
-}
-
-const envConfig = fs.readFileSync(envPath, 'utf8')
-const env: Record<string, string> = {}
-
-envConfig.split('\n').forEach(line => {
-    const match = line.match(/^([^=]+)=(.*)$/)
-    if (match) {
-        const key = match[1].trim()
-        // Remove quotes and whitespace/newlines (important for Windows \r)
-        const value = match[2].trim().replace(/^['"](.*)['"]$/, '$1')
-        env[key] = value
-    }
-})
-
-console.log('Env loaded keys:', Object.keys(env))
-
-const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = env.SUPABASE_SERVICE_ROLE_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseServiceKey) {
     console.error('Missing Supabase URL or Service Key in .env')
@@ -41,6 +19,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
         persistSession: false
     }
 })
+
+
 
 async function createAdmin() {
     const email = 'admin@easytotrade.com'

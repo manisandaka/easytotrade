@@ -21,12 +21,14 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.2.4",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
   "optionalDependencies": {
+    "lightningcss": "^1.30.2",
     "lightningcss-linux-x64-gnu": "^1.25.0"
   }
 }
