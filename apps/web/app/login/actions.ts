@@ -17,7 +17,7 @@ export async function signInWithGoogle() {
     })
 
     if (error) {
-        return redirect('/login?message=' + encodeURIComponent('Could not authenticate with Google. Please try again.'))
+        return redirect('/login?message=' + encodeURIComponent(error.message))
     }
 
     if (data.url) {
